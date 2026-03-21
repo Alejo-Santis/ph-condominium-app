@@ -6,15 +6,16 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: 'resources/js/app.js',
             refresh: true,
         }),
         tailwindcss(),
         svelte(),
     ],
     server: {
-        watch: {
-            ignored: ['**/storage/framework/views/**'],
+        hmr: {
+            host: 'localhost',
+            port: 5173,
         },
     },
 });
