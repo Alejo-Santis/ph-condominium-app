@@ -36,6 +36,11 @@
             href: '/charges',
             icon: `<svg xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>`,
         },
+        {
+            name: 'Parqueaderos',
+            href: '/parking-spaces',
+            icon: `<svg xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7v10m0-10h5a2 2 0 010 4H8m0 0h2a2 2 0 010 4H8"/><rect x="3" y="3" width="18" height="18" rx="2" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+        },
     ];
 
     const sectionMeta = {
@@ -44,7 +49,8 @@
         '/towers':      { label: 'Torres',        href: '/towers' },
         '/units':       { label: 'Unidades',      href: '/units' },
         '/persons':     { label: 'Personas',      href: '/persons' },
-        '/charges':     { label: 'Cobros',        href: '/charges' },
+        '/charges':         { label: 'Cobros',        href: '/charges' },
+        '/parking-spaces':  { label: 'Parqueaderos',  href: '/parking-spaces' },
     };
 
     // Build breadcrumbs from URL segments

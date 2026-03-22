@@ -53,8 +53,19 @@ class ChargeController extends Controller
 
     public function show(Charge $charge)
     {
-        $charge->load('unit', 'paymentTransactions');
-        return Inertia::render('Charges/Show', ['charge' => $charge]);
+        $charge->load([
+            'unit.tower.property.paymentConfig',
+            'paymentTransactions',
+            'person',
+        ]);
+
+        $config = $charge->unit?->tower?->property?->paymentConfig;
+
+        return Inertia::render('Charges/Show', [
+            'charge'           => $charge,
+            'canGenerateLink'  => $config?->is_active && ! in_array($charge->status, ['paid', 'cancelled']),
+            'latestPaymentUrl' => $charge->latestTransaction?->payment_url,
+        ]);
     }
 
     public function edit(Charge $charge)

@@ -6,7 +6,7 @@ enum StatusParkingSpace: string
 {
     case AVAILABLE = 'available';
     case ASSIGNED = 'assigned';
-    case BLOCKED = 'locked';
+    case BLOCKED = 'blocked';
 
     public function label(): string
     {

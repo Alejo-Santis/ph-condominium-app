@@ -7,6 +7,9 @@ use App\Http\Controllers\UnitController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ChargeController;
 use App\Http\Controllers\PaymentConfigController;
+use App\Http\Controllers\GenerateLinkController;
+use App\Http\Controllers\WompiWebhookController;
+use App\Http\Controllers\ParkingSpaceController;
 use App\Models\Property;
 use App\Models\Tower;
 use App\Models\Unit;
@@ -69,6 +72,15 @@ Route::middleware('auth')->group(function () {
     // Payment Config (per property)
     Route::get('/properties/{property}/payment-config', [PaymentConfigController::class, 'edit'])->name('payment-config.edit');
     Route::put('/properties/{property}/payment-config', [PaymentConfigController::class, 'update'])->name('payment-config.update');
+
+    // Generate Wompi payment link for a charge
+    Route::post('/charges/{charge}/generate-link', GenerateLinkController::class)->name('charges.generate-link');
+
+    // Parking Spaces
+    Route::resource('parking-spaces', ParkingSpaceController::class);
 });
+
+// Wompi webhook — public, no auth, no CSRF
+Route::post('/webhooks/wompi', WompiWebhookController::class)->name('webhooks.wompi');
 
 require __DIR__.'/auth.php';
