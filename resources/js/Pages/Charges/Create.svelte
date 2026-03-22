@@ -3,142 +3,131 @@
     import AppLayout from '../../Layouts/AppLayout.svelte';
     import Button from '../../Components/Button.svelte';
     import TextInput from '../../Components/TextInput.svelte';
-    import Textarea from '../../Components/Textarea.svelte';
-    import InputLabel from '../../Components/InputLabel.svelte';
-    import InputError from '../../Components/InputError.svelte';
-    import Select from '../../Components/Select.svelte';
 
-    let { units = [] } = $props();
+    let { units = [], persons = [] } = $props();
 
     const form = useForm({
         unit_id: '',
-        description: '',
+        person_id: '',
+        concept: '',
         amount: '',
-        due_date: '',
+        billing_month: '',
         status: 'pending',
-        charge_type: '',
     });
 
-    async function submit() {
+    function submit() {
         $form.post('/charges');
     }
 </script>
 
 <svelte:head>
-    <title>Create Charge</title>
+    <title>Nuevo cobro — Portal PH</title>
 </svelte:head>
 
 <AppLayout>
-    <div class="max-w-2xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-900 mb-6">Create New Charge</h1>
-
-        <form onsubmit={(e) => { e.preventDefault(); submit(); }} class="bg-white rounded-lg shadow p-6 space-y-6">
-            <div>
-                <InputLabel for="unit_id">Unit *</InputLabel>
-                <Select
-                    id="unit_id"
-                    bind:value={$form.unit_id}
-                    error={$form.errors.unit_id}
-                >
-                    <option value="">Select a unit</option>
-                    {#each units as unit}
-                        <option value={unit.id}>
-                            {unit.tower?.name} - {unit.number}
-                        </option>
-                    {/each}
-                </Select>
-                {#if $form.errors.unit_id}
-                    <InputError message={$form.errors.unit_id} />
-                {/if}
-            </div>
-
-            <div>
-                <InputLabel for="description">Description *</InputLabel>
-                <Textarea
-                    id="description"
-                    bind:value={$form.description}
-                    placeholder="e.g., Monthly administration fee"
-                    error={$form.errors.description}
-                />
-                {#if $form.errors.description}
-                    <InputError message={$form.errors.description} />
-                {/if}
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <InputLabel for="amount">Amount (COP) *</InputLabel>
-                    <TextInput
-                        id="amount"
-                        type="number"
-                        bind:value={$form.amount}
-                        placeholder="e.g., 250000"
-                        error={$form.errors.amount}
-                    />
-                    {#if $form.errors.amount}
-                        <InputError message={$form.errors.amount} />
-                    {/if}
-                </div>
-
-                <div>
-                    <InputLabel for="due_date">Due Date *</InputLabel>
-                    <TextInput
-                        id="due_date"
-                        type="date"
-                        bind:value={$form.due_date}
-                        error={$form.errors.due_date}
-                    />
-                    {#if $form.errors.due_date}
-                        <InputError message={$form.errors.due_date} />
-                    {/if}
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <InputLabel for="charge_type">Charge Type *</InputLabel>
-                    <Select
-                        id="charge_type"
-                        bind:value={$form.charge_type}
-                        error={$form.errors.charge_type}
-                    >
-                        <option value="">Select type</option>
-                        <option value="administration">Administration</option>
-                        <option value="maintenance">Maintenance</option>
-                        <option value="special">Special</option>
-                        <option value="utility">Utility</option>
-                    </Select>
-                    {#if $form.errors.charge_type}
-                        <InputError message={$form.errors.charge_type} />
-                    {/if}
-                </div>
-
-                <div>
-                    <InputLabel for="status">Status *</InputLabel>
-                    <Select
-                        id="status"
-                        bind:value={$form.status}
-                        error={$form.errors.status}
-                    >
-                        <option value="pending">Pending</option>
-                        <option value="paid">Paid</option>
-                        <option value="overdue">Overdue</option>
-                        <option value="cancelled">Cancelled</option>
-                    </Select>
-                    {#if $form.errors.status}
-                        <InputError message={$form.errors.status} />
-                    {/if}
-                </div>
-            </div>
-
-            <div class="flex gap-4 pt-4">
-                <Button type="submit" variant="primary" disabled={$form.processing}>
-                    {$form.processing ? 'Creating...' : 'Create Charge'}
-                </Button>
-                <Button href="/charges" as="a" variant="secondary">
-                    Cancel
-                </Button>
-            </div>
-        </form>
+    <div class="mb-6 flex items-center gap-3">
+        <a href="/charges" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <div>
+            <h1 class="text-xl font-semibold text-slate-900">Nuevo cobro</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Genera un cobro manual para una unidad</p>
+        </div>
     </div>
+
+    <form onsubmit={(e) => { e.preventDefault(); submit(); }} class="max-w-2xl">
+        <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
+
+            <div class="px-6 py-5">
+                <h2 class="text-sm font-semibold text-slate-700 mb-4">Destinatario</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="unit_id" class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Unidad <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            id="unit_id"
+                            bind:value={$form.unit_id}
+                            class="w-full px-4 py-2.5 border {$form.errors.unit_id ? 'border-red-300' : 'border-slate-300'} rounded-lg text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                        >
+                            <option value="">Selecciona una unidad</option>
+                            {#each units as unit}
+                                <option value={unit.id}>{unit.tower?.name ?? ''} — Apto {unit.number}</option>
+                            {/each}
+                        </select>
+                        {#if $form.errors.unit_id}
+                            <p class="mt-1.5 text-xs text-red-600">{$form.errors.unit_id}</p>
+                        {/if}
+                    </div>
+                    <div>
+                        <label for="person_id" class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Persona <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            id="person_id"
+                            bind:value={$form.person_id}
+                            class="w-full px-4 py-2.5 border {$form.errors.person_id ? 'border-red-300' : 'border-slate-300'} rounded-lg text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                        >
+                            <option value="">Selecciona una persona</option>
+                            {#each persons as person}
+                                <option value={person.id}>{person.first_name} {person.last_name}</option>
+                            {/each}
+                        </select>
+                        {#if $form.errors.person_id}
+                            <p class="mt-1.5 text-xs text-red-600">{$form.errors.person_id}</p>
+                        {/if}
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-5">
+                <h2 class="text-sm font-semibold text-slate-700 mb-4">Detalle del cobro</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="concept" class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Concepto <span class="text-red-500">*</span>
+                        </label>
+                        <TextInput id="concept" bind:value={$form.concept} placeholder="Cuota de administración marzo 2026" error={$form.errors.concept} />
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="amount" class="block text-sm font-medium text-slate-700 mb-1.5">
+                                Valor (COP) <span class="text-red-500">*</span>
+                            </label>
+                            <TextInput id="amount" type="number" bind:value={$form.amount} placeholder="250000" error={$form.errors.amount} />
+                        </div>
+                        <div>
+                            <label for="billing_month" class="block text-sm font-medium text-slate-700 mb-1.5">
+                                Mes de facturación <span class="text-red-500">*</span>
+                            </label>
+                            <TextInput id="billing_month" type="date" bind:value={$form.billing_month} error={$form.errors.billing_month} />
+                        </div>
+                    </div>
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-slate-700 mb-1.5">Estado</label>
+                        <select
+                            id="status"
+                            bind:value={$form.status}
+                            class="w-full px-4 py-2.5 border {$form.errors.status ? 'border-red-300' : 'border-slate-300'} rounded-lg text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                        >
+                            <option value="pending">Pendiente</option>
+                            <option value="link_generated">Link generado</option>
+                            <option value="paid">Pagado</option>
+                            <option value="overdue">Vencido</option>
+                            <option value="cancelled">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 flex items-center justify-end gap-3 bg-slate-50">
+                <Button href="/charges" as="a" variant="secondary">Cancelar</Button>
+                <Button type="submit" variant="primary" disabled={$form.processing}>
+                    {$form.processing ? 'Guardando...' : 'Crear cobro'}
+                </Button>
+            </div>
+        </div>
+    </form>
 </AppLayout>

@@ -3,128 +3,113 @@
     import AppLayout from '../../Layouts/AppLayout.svelte';
     import Button from '../../Components/Button.svelte';
     import TextInput from '../../Components/TextInput.svelte';
-    import InputLabel from '../../Components/InputLabel.svelte';
-    import InputError from '../../Components/InputError.svelte';
-    import Select from '../../Components/Select.svelte';
 
     let { unit = {}, towers = [] } = $props();
 
     const form = useForm({
         tower_id: unit.tower_id || '',
-        floor: unit.floor || '',
         number: unit.number || '',
-        area_m2: unit.area_m2 || '',
-        bedrooms: unit.bedrooms || '',
-        bathrooms: unit.bathrooms || '',
+        floor: unit.floor || '',
+        area_sqm: unit.area_sqm || '',
+        type: unit.type || 'residential',
     });
 
-    async function submit() {
-        $form.put(`/units/${unit.id}`);
+    function submit() {
+        $form.put(`/units/${unit.uuid}`);
     }
 </script>
 
 <svelte:head>
-    <title>Edit Unit</title>
+    <title>Editar unidad — Portal PH</title>
 </svelte:head>
 
 <AppLayout>
-    <div class="max-w-2xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-900 mb-6">Edit Unit</h1>
+    <div class="mb-6 flex items-center gap-3">
+        <a href="/units" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <div>
+            <h1 class="text-xl font-semibold text-slate-900">Editar unidad</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Unidad {unit.number}</p>
+        </div>
+    </div>
 
-        <form onsubmit={(e) => { e.preventDefault(); submit(); }} class="bg-white rounded-lg shadow p-6 space-y-6">
-            <div>
-                <InputLabel for="tower_id">Tower *</InputLabel>
-                <Select
+    <form onsubmit={(e) => { e.preventDefault(); submit(); }} class="max-w-2xl">
+        <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
+
+            <div class="px-6 py-5">
+                <h2 class="text-sm font-semibold text-slate-700 mb-4">Torre asociada</h2>
+                <label for="tower_id" class="block text-sm font-medium text-slate-700 mb-1.5">
+                    Torre <span class="text-red-500">*</span>
+                </label>
+                <select
                     id="tower_id"
                     bind:value={$form.tower_id}
-                    error={$form.errors.tower_id}
+                    class="w-full px-4 py-2.5 border {$form.errors.tower_id ? 'border-red-300' : 'border-slate-300'} rounded-lg text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
                 >
-                    <option value="">Select a tower</option>
+                    <option value="">Selecciona una torre</option>
                     {#each towers as tower}
-                        <option value={tower.id}>{tower.name}</option>
+                        <option value={tower.id}>{tower.name} — {tower.property?.name}</option>
                     {/each}
-                </Select>
+                </select>
                 {#if $form.errors.tower_id}
-                    <InputError message={$form.errors.tower_id} />
+                    <p class="mt-1.5 text-xs text-red-600">{$form.errors.tower_id}</p>
                 {/if}
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <InputLabel for="floor">Floor *</InputLabel>
-                    <TextInput
-                        id="floor"
-                        type="number"
-                        bind:value={$form.floor}
-                        error={$form.errors.floor}
-                    />
-                    {#if $form.errors.floor}
-                        <InputError message={$form.errors.floor} />
-                    {/if}
-                </div>
-
-                <div>
-                    <InputLabel for="number">Unit Number *</InputLabel>
-                    <TextInput
-                        id="number"
-                        bind:value={$form.number}
-                        error={$form.errors.number}
-                    />
-                    {#if $form.errors.number}
-                        <InputError message={$form.errors.number} />
-                    {/if}
+            <div class="px-6 py-5">
+                <h2 class="text-sm font-semibold text-slate-700 mb-4">Identificación</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="number" class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Número de unidad <span class="text-red-500">*</span>
+                        </label>
+                        <TextInput id="number" bind:value={$form.number} error={$form.errors.number} />
+                    </div>
+                    <div>
+                        <label for="floor" class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Piso <span class="text-red-500">*</span>
+                        </label>
+                        <TextInput id="floor" type="number" bind:value={$form.floor} error={$form.errors.floor} />
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-4">
-                <div>
-                    <InputLabel for="area_m2">Area (m²) *</InputLabel>
-                    <TextInput
-                        id="area_m2"
-                        type="number"
-                        bind:value={$form.area_m2}
-                        error={$form.errors.area_m2}
-                    />
-                    {#if $form.errors.area_m2}
-                        <InputError message={$form.errors.area_m2} />
-                    {/if}
-                </div>
-
-                <div>
-                    <InputLabel for="bedrooms">Bedrooms *</InputLabel>
-                    <TextInput
-                        id="bedrooms"
-                        type="number"
-                        bind:value={$form.bedrooms}
-                        error={$form.errors.bedrooms}
-                    />
-                    {#if $form.errors.bedrooms}
-                        <InputError message={$form.errors.bedrooms} />
-                    {/if}
-                </div>
-
-                <div>
-                    <InputLabel for="bathrooms">Bathrooms *</InputLabel>
-                    <TextInput
-                        id="bathrooms"
-                        type="number"
-                        bind:value={$form.bathrooms}
-                        error={$form.errors.bathrooms}
-                    />
-                    {#if $form.errors.bathrooms}
-                        <InputError message={$form.errors.bathrooms} />
-                    {/if}
+            <div class="px-6 py-5">
+                <h2 class="text-sm font-semibold text-slate-700 mb-4">Características</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="area_sqm" class="block text-sm font-medium text-slate-700 mb-1.5">Área m²</label>
+                        <TextInput id="area_sqm" type="number" bind:value={$form.area_sqm} error={$form.errors.area_sqm} />
+                    </div>
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Tipo <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            id="type"
+                            bind:value={$form.type}
+                            class="w-full px-4 py-2.5 border {$form.errors.type ? 'border-red-300' : 'border-slate-300'} rounded-lg text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                        >
+                            <option value="residential">Residencial</option>
+                            <option value="commercial">Comercial</option>
+                            <option value="mixed">Mixto</option>
+                        </select>
+                        {#if $form.errors.type}
+                            <p class="mt-1.5 text-xs text-red-600">{$form.errors.type}</p>
+                        {/if}
+                    </div>
                 </div>
             </div>
 
-            <div class="flex gap-4 pt-4">
+            <div class="px-6 py-4 flex items-center justify-end gap-3 bg-slate-50">
+                <Button href="/units" as="a" variant="secondary">Cancelar</Button>
                 <Button type="submit" variant="primary" disabled={$form.processing}>
-                    {$form.processing ? 'Saving...' : 'Save Changes'}
-                </Button>
-                <Button href="/units" as="a" variant="secondary">
-                    Cancel
+                    {$form.processing ? 'Guardando...' : 'Guardar cambios'}
                 </Button>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
 </AppLayout>

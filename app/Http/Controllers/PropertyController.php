@@ -13,8 +13,7 @@ class PropertyController extends Controller
      */
     public function index()
     {
-        $properties = Property::with('user')
-            ->orderBy('created_at', 'desc')
+        $properties = Property::orderBy('created_at', 'desc')
             ->paginate(15);
 
         return Inertia::render('Properties/Index', [
@@ -36,18 +35,18 @@ class PropertyController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:500',
-            'city' => 'required|string|max:100',
-            'province' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:20',
-            'country' => 'required|string|max:100',
-            'common_areas' => 'nullable|string',
+            'name'        => 'required|string|max:200',
+            'nit'         => 'required|string|max:20|unique:properties,nit',
+            'address'     => 'required|string|max:300',
+            'city'        => 'required|string|max:100',
+            'department'  => 'required|string|max:100',
+            'admin_email' => 'required|email|max:150',
+            'phone'       => 'nullable|string|max:20',
         ]);
 
-        $property = auth()->user()->properties()->create($validated);
+        $property = Property::create($validated);
 
-        return redirect()->route('properties.show', $property)
+        return redirect()->route('properties.index')
             ->with('success', 'Propiedad creada exitosamente.');
     }
 
@@ -56,13 +55,13 @@ class PropertyController extends Controller
      */
     public function show(Property $property)
     {
-        $property->load('towers', 'units', 'parkingSpaces');
+        $property->loadCount('towers');
 
         return Inertia::render('Properties/Show', [
             'property' => $property,
             'stats' => [
-                'towers' => $property->towers_count ?? 0,
-                'units' => $property->units_count ?? 0,
+                'towers'         => $property->towers_count,
+                'units'          => $property->units()->count(),
                 'parking_spaces' => $property->parkingSpaces()->count(),
             ],
         ]);
@@ -84,18 +83,18 @@ class PropertyController extends Controller
     public function update(Request $request, Property $property)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:500',
-            'city' => 'required|string|max:100',
-            'province' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:20',
-            'country' => 'required|string|max:100',
-            'common_areas' => 'nullable|string',
+            'name'        => 'required|string|max:200',
+            'nit'         => 'required|string|max:20|unique:properties,nit,' . $property->id,
+            'address'     => 'required|string|max:300',
+            'city'        => 'required|string|max:100',
+            'department'  => 'required|string|max:100',
+            'admin_email' => 'required|email|max:150',
+            'phone'       => 'nullable|string|max:20',
         ]);
 
         $property->update($validated);
 
-        return redirect()->route('properties.show', $property)
+        return redirect()->route('properties.index')
             ->with('success', 'Propiedad actualizada exitosamente.');
     }
 

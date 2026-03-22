@@ -29,11 +29,12 @@ class TowerController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'property_id' => 'required|exists:properties,id',
-            'name' => 'required|string|max:100',
-            'code' => 'required|string|max:50|unique:towers',
-            'floors' => 'required|integer|min:1',
-            'units_per_floor' => 'required|integer|min:1',
+            'property_id'  => 'required|exists:properties,id',
+            'name'         => 'required|string|max:200',
+            'floors'       => 'required|integer|min:1',
+            'has_elevator' => 'boolean',
+            'has_parking'  => 'boolean',
+            'description'  => 'nullable|string|max:500',
         ]);
 
         Tower::create($validated);
@@ -60,11 +61,12 @@ class TowerController extends Controller
     public function update(Request $request, Tower $tower)
     {
         $validated = $request->validate([
-            'property_id' => 'required|exists:properties,id',
-            'name' => 'required|string|max:100',
-            'code' => 'required|string|max:50|unique:towers,code,' . $tower->id,
-            'floors' => 'required|integer|min:1',
-            'units_per_floor' => 'required|integer|min:1',
+            'property_id'  => 'required|exists:properties,id',
+            'name'         => 'required|string|max:200',
+            'floors'       => 'required|integer|min:1',
+            'has_elevator' => 'boolean',
+            'has_parking'  => 'boolean',
+            'description'  => 'nullable|string|max:500',
         ]);
 
         $tower->update($validated);

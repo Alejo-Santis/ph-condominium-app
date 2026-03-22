@@ -11,7 +11,7 @@ class UnitController extends Controller
 {
     public function index()
     {
-        $units = Unit::with('tower', 'persons')
+        $units = Unit::with('tower', 'people')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -30,11 +30,10 @@ class UnitController extends Controller
     {
         $validated = $request->validate([
             'tower_id' => 'required|exists:towers,id',
-            'floor' => 'required|integer|min:1',
-            'number' => 'required|string|max:50',
-            'area_m2' => 'required|numeric|min:0',
-            'bedrooms' => 'required|integer|min:0',
-            'bathrooms' => 'required|integer|min:0',
+            'number'   => 'required|string|max:50',
+            'floor'    => 'required|integer|min:1',
+            'area_sqm' => 'nullable|numeric|min:0',
+            'type'     => 'required|in:residential,commercial,mixed',
         ]);
 
         Unit::create($validated);
@@ -45,7 +44,7 @@ class UnitController extends Controller
 
     public function show(Unit $unit)
     {
-        $unit->load('tower', 'persons', 'parkingSpaces');
+        $unit->load('tower', 'people', 'parkingSpaces');
         return Inertia::render('Units/Show', ['unit' => $unit]);
     }
 
@@ -62,11 +61,10 @@ class UnitController extends Controller
     {
         $validated = $request->validate([
             'tower_id' => 'required|exists:towers,id',
-            'floor' => 'required|integer|min:1',
-            'number' => 'required|string|max:50',
-            'area_m2' => 'required|numeric|min:0',
-            'bedrooms' => 'required|integer|min:0',
-            'bathrooms' => 'required|integer|min:0',
+            'number'   => 'required|string|max:50',
+            'floor'    => 'required|integer|min:1',
+            'area_sqm' => 'nullable|numeric|min:0',
+            'type'     => 'required|in:residential,commercial,mixed',
         ]);
 
         $unit->update($validated);

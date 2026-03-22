@@ -4,16 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Charge;
 use App\Models\Unit;
+use App\Models\Person;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Carbon\Carbon;
 
 class ChargeController extends Controller
 {
     public function index()
     {
-        $charges = Charge::with('unit', 'unit.tower')
-            ->orderBy('due_date', 'desc')
+        $charges = Charge::with('unit', 'unit.tower', 'person')
+            ->orderBy('billing_month', 'desc')
             ->paginate(15);
 
         return Inertia::render('Charges/Index', [
@@ -23,20 +23,27 @@ class ChargeController extends Controller
 
     public function create()
     {
-        $units = Unit::all();
-        return Inertia::render('Charges/Create', ['units' => $units]);
+        $units   = Unit::with('tower')->orderBy('number')->get();
+        $persons = Person::orderBy('last_name')->get();
+        return Inertia::render('Charges/Create', [
+            'units'   => $units,
+            'persons' => $persons,
+        ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'unit_id' => 'required|exists:units,id',
-            'description' => 'required|string|max:500',
-            'amount' => 'required|numeric|min:0',
-            'due_date' => 'required|date',
-            'status' => 'required|in:pending,paid,overdue,cancelled',
-            'charge_type' => 'required|in:administration,maintenance,special,utility',
+            'unit_id'       => 'required|exists:units,id',
+            'person_id'     => 'required|exists:people,id',
+            'concept'       => 'required|string|max:200',
+            'amount'        => 'required|numeric|min:0',
+            'billing_month' => 'required|date',
+            'origin'        => 'in:external_api,manual',
+            'status'        => 'required|in:pending,link_generated,paid,overdue,cancelled',
         ]);
+
+        $validated['origin'] = $validated['origin'] ?? 'manual';
 
         Charge::create($validated);
 
@@ -52,22 +59,24 @@ class ChargeController extends Controller
 
     public function edit(Charge $charge)
     {
-        $units = Unit::all();
+        $units   = Unit::with('tower')->orderBy('number')->get();
+        $persons = Person::orderBy('last_name')->get();
         return Inertia::render('Charges/Edit', [
-            'charge' => $charge,
-            'units' => $units,
+            'charge'  => $charge,
+            'units'   => $units,
+            'persons' => $persons,
         ]);
     }
 
     public function update(Request $request, Charge $charge)
     {
         $validated = $request->validate([
-            'unit_id' => 'required|exists:units,id',
-            'description' => 'required|string|max:500',
-            'amount' => 'required|numeric|min:0',
-            'due_date' => 'required|date',
-            'status' => 'required|in:pending,paid,overdue,cancelled',
-            'charge_type' => 'required|in:administration,maintenance,special,utility',
+            'unit_id'       => 'required|exists:units,id',
+            'person_id'     => 'required|exists:people,id',
+            'concept'       => 'required|string|max:200',
+            'amount'        => 'required|numeric|min:0',
+            'billing_month' => 'required|date',
+            'status'        => 'required|in:pending,link_generated,paid,overdue,cancelled',
         ]);
 
         $charge->update($validated);

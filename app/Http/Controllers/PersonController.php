@@ -29,14 +29,13 @@ class PersonController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'document_type' => 'required|in:cc,ce,pasaporte,nit',
+            'document_type'   => 'required|in:cc,ce,nit,passport',
             'document_number' => 'required|string|max:50|unique:people',
-            'first_name' => 'required|string|max:100',
-            'last_name' => 'required|string|max:100',
-            'email' => 'required|email|unique:people',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
-            'type' => 'required|in:owner,tenant,family_member',
+            'first_name'      => 'required|string|max:150',
+            'last_name'       => 'required|string|max:150',
+            'email'           => 'required|email|max:150|unique:people',
+            'phone'           => 'nullable|string|max:20',
+            'alt_phone'       => 'nullable|string|max:20',
         ]);
 
         Person::create($validated);
@@ -63,14 +62,13 @@ class PersonController extends Controller
     public function update(Request $request, Person $person)
     {
         $validated = $request->validate([
-            'document_type' => 'required|in:cc,ce,pasaporte,nit',
+            'document_type'   => 'required|in:cc,ce,nit,passport',
             'document_number' => 'required|string|max:50|unique:people,document_number,' . $person->id,
-            'first_name' => 'required|string|max:100',
-            'last_name' => 'required|string|max:100',
-            'email' => 'required|email|unique:people,email,' . $person->id,
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
-            'type' => 'required|in:owner,tenant,family_member',
+            'first_name'      => 'required|string|max:150',
+            'last_name'       => 'required|string|max:150',
+            'email'           => 'required|email|max:150|unique:people,email,' . $person->id,
+            'phone'           => 'nullable|string|max:20',
+            'alt_phone'       => 'nullable|string|max:20',
         ]);
 
         $person->update($validated);
