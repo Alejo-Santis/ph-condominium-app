@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopedToProperty;
 use App\Models\Tower;
 use App\Models\Property;
 use Illuminate\Http\Request;
@@ -9,9 +10,11 @@ use Inertia\Inertia;
 
 class TowerController extends Controller
 {
+    use ScopedToProperty;
+
     public function index()
     {
-        $towers = Tower::with('property')
+        $towers = $this->applyPropertyScope(Tower::with('property'), 'property_id')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -22,7 +25,7 @@ class TowerController extends Controller
 
     public function create()
     {
-        $properties = Property::all();
+        $properties = $this->applyPropertyScope(Property::query())->get();
         return Inertia::render('Towers/Create', ['properties' => $properties]);
     }
 
@@ -45,13 +48,15 @@ class TowerController extends Controller
 
     public function show(Tower $tower)
     {
+        $this->authorizeProperty($tower->property_id);
         $tower->load('property', 'units');
         return Inertia::render('Towers/Show', ['tower' => $tower]);
     }
 
     public function edit(Tower $tower)
     {
-        $properties = Property::all();
+        $this->authorizeProperty($tower->property_id);
+        $properties = $this->applyPropertyScope(Property::query())->get();
         return Inertia::render('Towers/Edit', [
             'tower' => $tower,
             'properties' => $properties,
@@ -60,6 +65,7 @@ class TowerController extends Controller
 
     public function update(Request $request, Tower $tower)
     {
+        $this->authorizeProperty($tower->property_id);
         $validated = $request->validate([
             'property_id'  => 'required|exists:properties,id',
             'name'         => 'required|string|max:200',
@@ -77,6 +83,7 @@ class TowerController extends Controller
 
     public function destroy(Tower $tower)
     {
+        $this->authorizeProperty($tower->property_id);
         $tower->delete();
 
         return redirect()->route('towers.index')

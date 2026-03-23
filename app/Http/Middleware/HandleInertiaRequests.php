@@ -35,10 +35,11 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'flash' => [
-                'success' => $request->session()->get('success'),
-                'error'   => $request->session()->get('error'),
-                'warning' => $request->session()->get('warning'),
-                'info'    => $request->session()->get('info'),
+                'success'     => $request->session()->get('success'),
+                'error'       => $request->session()->get('error'),
+                'warning'     => $request->session()->get('warning'),
+                'info'        => $request->session()->get('info'),
+                'new_api_key' => $request->session()->get('new_api_key'),
             ],
         ];
     }

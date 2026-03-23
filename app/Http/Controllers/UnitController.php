@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopedToProperty;
 use App\Models\Unit;
 use App\Models\Tower;
 use Illuminate\Http\Request;
@@ -9,9 +10,21 @@ use Inertia\Inertia;
 
 class UnitController extends Controller
 {
+    use ScopedToProperty;
+
+    private function unitQuery()
+    {
+        $query = Unit::with('tower', 'people');
+        $pid   = $this->scopedPropertyId();
+        if ($pid) {
+            $query->whereHas('tower', fn($q) => $q->where('property_id', $pid));
+        }
+        return $query;
+    }
+
     public function index()
     {
-        $units = Unit::with('tower', 'people')
+        $units = $this->unitQuery()
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -22,7 +35,7 @@ class UnitController extends Controller
 
     public function create()
     {
-        $towers = Tower::all();
+        $towers = $this->applyPropertyScope(Tower::query(), 'property_id')->get();
         return Inertia::render('Units/Create', ['towers' => $towers]);
     }
 
@@ -44,13 +57,15 @@ class UnitController extends Controller
 
     public function show(Unit $unit)
     {
+        $this->authorizeProperty($unit->tower->property_id);
         $unit->load('tower', 'people', 'parkingSpaces');
         return Inertia::render('Units/Show', ['unit' => $unit]);
     }
 
     public function edit(Unit $unit)
     {
-        $towers = Tower::all();
+        $this->authorizeProperty($unit->tower->property_id);
+        $towers = $this->applyPropertyScope(Tower::query(), 'property_id')->get();
         return Inertia::render('Units/Edit', [
             'unit' => $unit,
             'towers' => $towers,
@@ -59,6 +74,7 @@ class UnitController extends Controller
 
     public function update(Request $request, Unit $unit)
     {
+        $this->authorizeProperty($unit->tower->property_id);
         $validated = $request->validate([
             'tower_id' => 'required|exists:towers,id',
             'number'   => 'required|string|max:50',
@@ -75,6 +91,7 @@ class UnitController extends Controller
 
     public function destroy(Unit $unit)
     {
+        $this->authorizeProperty($unit->tower->property_id);
         $unit->delete();
 
         return redirect()->route('units.index')

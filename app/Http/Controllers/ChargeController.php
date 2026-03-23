@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopedToProperty;
 use App\Models\Charge;
 use App\Models\Unit;
 use App\Models\Person;
@@ -10,9 +11,21 @@ use Inertia\Inertia;
 
 class ChargeController extends Controller
 {
+    use ScopedToProperty;
+
+    private function chargeQuery()
+    {
+        $query = Charge::with('unit', 'unit.tower', 'person');
+        $pid   = $this->scopedPropertyId();
+        if ($pid) {
+            $query->whereHas('unit.tower', fn($q) => $q->where('property_id', $pid));
+        }
+        return $query;
+    }
+
     public function index()
     {
-        $charges = Charge::with('unit', 'unit.tower', 'person')
+        $charges = $this->chargeQuery()
             ->orderBy('billing_month', 'desc')
             ->paginate(15);
 
@@ -23,7 +36,10 @@ class ChargeController extends Controller
 
     public function create()
     {
-        $units   = Unit::with('tower')->orderBy('number')->get();
+        $pid     = $this->scopedPropertyId();
+        $units   = Unit::with('tower')
+            ->when($pid, fn($q) => $q->whereHas('tower', fn($q2) => $q2->where('property_id', $pid)))
+            ->orderBy('number')->get();
         $persons = Person::orderBy('last_name')->get();
         return Inertia::render('Charges/Create', [
             'units'   => $units,
@@ -70,7 +86,10 @@ class ChargeController extends Controller
 
     public function edit(Charge $charge)
     {
-        $units   = Unit::with('tower')->orderBy('number')->get();
+        $pid     = $this->scopedPropertyId();
+        $units   = Unit::with('tower')
+            ->when($pid, fn($q) => $q->whereHas('tower', fn($q2) => $q2->where('property_id', $pid)))
+            ->orderBy('number')->get();
         $persons = Person::orderBy('last_name')->get();
         return Inertia::render('Charges/Edit', [
             'charge'  => $charge,

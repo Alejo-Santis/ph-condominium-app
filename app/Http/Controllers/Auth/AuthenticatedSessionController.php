@@ -33,7 +33,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Residentes van a su portal; admins al dashboard
+        $destination = Auth::user()->isTenant()
+            ? route('portal.index', absolute: false)
+            : route('dashboard', absolute: false);
+
+        return redirect()->intended($destination);
     }
 
     /**

@@ -10,6 +10,9 @@ use App\Http\Controllers\PaymentConfigController;
 use App\Http\Controllers\GenerateLinkController;
 use App\Http\Controllers\WompiWebhookController;
 use App\Http\Controllers\ParkingSpaceController;
+use App\Http\Controllers\ApiKeyController;
+use App\Http\Controllers\ResidentPortalController;
+use App\Http\Controllers\InviteResidentController;
 use App\Models\Property;
 use App\Models\Tower;
 use App\Models\Unit;
@@ -28,27 +31,29 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard', [
-        'stats' => [
-            'properties'       => Property::count(),
-            'units'            => Unit::count(),
-            'persons'          => Person::count(),
-            'pending_charges'  => Charge::where('status', 'pending')->count(),
-            'overdue_charges'  => Charge::where('status', 'overdue')->count(),
-            'paid_this_month'  => Charge::where('status', 'paid')
-                ->whereMonth('billing_month', now()->month)
-                ->whereYear('billing_month', now()->year)
-                ->sum('amount'),
-        ],
-        'recent_charges' => Charge::with('unit.tower', 'person')
-            ->orderByDesc('created_at')
-            ->limit(5)
-            ->get(),
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+// ── Admin panel (requiere auth + rol admin) ───────────────────────────────────
+Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
-Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard', [
+            'stats' => [
+                'properties'       => Property::count(),
+                'units'            => Unit::count(),
+                'persons'          => Person::count(),
+                'pending_charges'  => Charge::where('status', 'pending')->count(),
+                'overdue_charges'  => Charge::where('status', 'overdue')->count(),
+                'paid_this_month'  => Charge::where('status', 'paid')
+                    ->whereMonth('billing_month', now()->month)
+                    ->whereYear('billing_month', now()->year)
+                    ->sum('amount'),
+            ],
+            'recent_charges' => Charge::with('unit.tower', 'person')
+                ->orderByDesc('created_at')
+                ->limit(5)
+                ->get(),
+        ]);
+    })->name('dashboard');
+
     // Profile management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -78,6 +83,24 @@ Route::middleware('auth')->group(function () {
 
     // Parking Spaces
     Route::resource('parking-spaces', ParkingSpaceController::class);
+
+    // API Keys (por propiedad)
+    Route::prefix('properties/{property}/api-keys')->name('properties.api-keys.')->group(function () {
+        Route::get('/',                     [ApiKeyController::class, 'index'])->name('index');
+        Route::post('/',                    [ApiKeyController::class, 'store'])->name('store');
+        Route::patch('/{apiKey}/toggle',    [ApiKeyController::class, 'toggle'])->name('toggle');
+        Route::delete('/{apiKey}',          [ApiKeyController::class, 'destroy'])->name('destroy');
+    });
+
+    // Resident invitations
+    Route::get('/persons/{person}/invite',  [InviteResidentController::class, 'create'])->name('residents.invite');
+    Route::post('/persons/{person}/invite', [InviteResidentController::class, 'store'])->name('residents.invite.store');
+});
+
+// ── Portal del residente ──────────────────────────────────────────────────────
+Route::middleware('auth')->prefix('portal')->name('portal.')->group(function () {
+    Route::get('/',              [ResidentPortalController::class, 'index'])->name('index');
+    Route::get('/charges/{charge}', [ResidentPortalController::class, 'show'])->name('charges.show');
 });
 
 // Wompi webhook — public, no auth, no CSRF

@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopedToProperty;
 use App\Models\Property;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PropertyController extends Controller
 {
+    use ScopedToProperty;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $properties = Property::orderBy('created_at', 'desc')
+        $properties = $this->applyPropertyScope(Property::query())
+            ->orderBy('created_at', 'desc')
             ->paginate(15);
 
         return Inertia::render('Properties/Index', [
@@ -55,6 +58,7 @@ class PropertyController extends Controller
      */
     public function show(Property $property)
     {
+        $this->authorizeProperty($property->id);
         $property->loadCount('towers');
 
         return Inertia::render('Properties/Show', [
@@ -72,6 +76,7 @@ class PropertyController extends Controller
      */
     public function edit(Property $property)
     {
+        $this->authorizeProperty($property->id);
         return Inertia::render('Properties/Edit', [
             'property' => $property,
         ]);
@@ -82,6 +87,7 @@ class PropertyController extends Controller
      */
     public function update(Request $request, Property $property)
     {
+        $this->authorizeProperty($property->id);
         $validated = $request->validate([
             'name'        => 'required|string|max:200',
             'nit'         => 'required|string|max:20|unique:properties,nit,' . $property->id,
@@ -103,6 +109,7 @@ class PropertyController extends Controller
      */
     public function destroy(Property $property)
     {
+        $this->authorizeProperty($property->id);
         $property->delete();
 
         return redirect()->route('properties.index')

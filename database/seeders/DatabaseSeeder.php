@@ -19,16 +19,16 @@ class DatabaseSeeder extends Seeder
         // Seed roles and permissions first
         $this->call(RoleAndPermissionSeeder::class);
 
-        // Create test user with UUID
-        $user = User::create([
-            'uuid' => Uuid::uuid4()->toString(),
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('password'),
-            'is_active' => true,
-        ]);
+        // Create or find the admin user and ensure it has the super_admin role
+        $user = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name'      => 'Admin User',
+                'password'  => bcrypt('password'),
+                'is_active' => true,
+            ]
+        );
 
-        // Assign super_admin role to test user
-        $user->assignRole('super_admin');
+        $user->syncRoles(['super_admin']);
     }
 }
